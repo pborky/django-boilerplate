@@ -1,0 +1,24 @@
+# vitrualenv - specific files
+bin/
+lib/
+local/
+include/
+man/
+share/
+
+# IDE specific
+*.iml
+.idea/
+
+# makefile generated
+init
+tmp/
+
+# django generated
+project/settings/secret.py
+project/settings/local.py
+project/static/*
+
+# python generated
+*.pyc
+**/*.pyc
