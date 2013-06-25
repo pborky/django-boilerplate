@@ -5,6 +5,10 @@ local/
 include/
 man/
 share/
+dist/
+build/
+pip-log.txt
+
 
 # IDE specific
 *.iml
@@ -20,5 +24,8 @@ project/settings/local.py
 project/static/*
 
 # python generated
-*.pyc
-**/*.pyc
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+
