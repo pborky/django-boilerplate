@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block body_class %}{{ block.super }} home{% endblock %}
+
+
+{% block sidebar %}
+    <ul class="nav nav-list">
+        <li class="nav-header">List header</li>
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">Library</a></li>
+        ...
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <form class="form-search">
+        <div class="input-append">
+            <input type="text" class="search-query input-xxlarge">
+            <button type="submit" class="btn"><i class="icon-search"></i></button>
+        </div>
+    </form>
+
+    <a href="#myModal" role="button" class="btn btn-primary" data-toggle="modal">Launch demo modal</a>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="myModalLabel">Modal header</h3>
+        </div>
+        <div class="modal-body">
+            <p>One fine body…</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-primary">Save changes</button>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+{% endblock  %}
