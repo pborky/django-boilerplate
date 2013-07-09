@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load bootstrap_toolkit %}
+{% load url from future %}
+
+{% block body_class %}{{ block.super }} login{% endblock %}
+{% block css %}{% endblock %}
+{% block javascript %} {% endblock %}
+{% block footer %}Login window{% endblock  %}
+{% block javascript_library %} {% endblock %}
+{% block sidebar %} {% endblock %}
+
+{% block content %}
+<form id="login" class="form-vertical" action="{% url 'do_login' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    {{ login_form|as_bootstrap:'vertical' }}
+    <button type="submit" class="btn btn-primary">Sign in</button>
+</form>
+{% endblock %}
+
+
+

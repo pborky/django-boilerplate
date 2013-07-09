@@ -151,9 +151,12 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'south',
     'bootstrap_toolkit',
+    'project',
 )
 
 BOOTSTRAP_BASE_URL  = STATIC_URL
+
+LOGIN_URL = '/login'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
