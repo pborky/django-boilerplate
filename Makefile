@@ -11,7 +11,7 @@ all: coverage
 rmenv: clean
 	rm -fr bin lib local include build init share man tmp
 
-init:
+initenv:
 	virtualenv .
 	virtualenv  --relocatable .
 	mkdir tmp

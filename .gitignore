@@ -15,7 +15,7 @@ pip-log.txt
 .idea/
 
 # makefile generated
-init
+initenv
 tmp/
 
 # python generated
