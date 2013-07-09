@@ -29,7 +29,7 @@ class Decorator(object):
     def __call__(self, *args, **kwargs):
         return self.func.__call__(*args, **kwargs)
 
-def view(pattern, template = None, form_cls = None, redirect_to = None, redirect_attr = None, invalid_form_msg = 'Form is not valid.', **kwargs):
+def view(pattern, template = None, form_cls = None, redirect_to = None, redirect_attr = None, invalid_form_msg = 'Form is not valid.', decorators = (), **kwargs):
     class Wrapper(Decorator):
         def __init__(self, obj):
             super(Wrapper, self).__init__(obj)
@@ -50,13 +50,17 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
                     # in case we have decorated function instead of class..
                     if hasattr(obj, '__call__'):
                         permitted_methods[method.upper()] = obj
-
+            
             require_http_methods_decorator = http.require_http_methods(request_method_list=permitted_methods.keys())
             for key, val in  permitted_methods.items():
-                setattr(self, key.lower(), require_http_methods_decorator(val))
-
+                setattr(self, key.lower(), val)
+            
             self.permitted_methods = permitted_methods.keys()
+            require_http_methods_decorator = http.require_http_methods(request_method_list=permitted_methods.keys())
 
+            # decorate inner function            
+            self.inner = reduce(lambda fnc, dec: dec(fnc), (require_http_methods_decorator,)+decorators, self.inner )
+        
         @staticmethod
         def _mk_forms(*args, **kwargs):
             if isinstance(form_cls,tuple) or isinstance(form_cls, list):
@@ -75,14 +79,19 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
             else:
                 it = forms
             return all(f.is_valid() if f is not None else True for f in it)
+
         def url(self):
             return url(pattern, self, kwargs, self.__name__)
 
-        def __call__(self, request, *args, **kwargs):
+        def __call__(self, *args, **kwargs):
+            return self.inner(*args, **kwargs)
+            
+
+        def inner(self, request, *args, **kwargs):
             from django.shortcuts import render, redirect
             try:
 
-                if not request.method in self.permitted_methods:
+                if request.method not in self.permitted_methods:
                     return http.HttpResponseNotAllowed(permitted_methods=self.permitted_methods)
 
                 if request.method in ('POST',):
@@ -144,24 +153,6 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
                 return render(request, template, context_vars)
     return Wrapper
 
-def redirect(attr='next_url', fallback='/'):
-    class Wrapper(Decorator):
-        def __call__(self, request, *args, **kwargs):
-            from django.shortcuts import redirect
-            ret = super(Wrapper,self).__call__(request, *args, **kwargs)
-            if attr in request.POST:
-                next = request.POST.get(attr)
-            else:
-                next = request.GET.get(attr,fallback)
-            return ret if ret else redirect(next)
-    return Wrapper
-
-def default_response(response_cls=HttpResponse):
-    class Wrapper(Decorator):
-        def __call__(self, request, *args, **kwargs):
-            ret = super(Wrapper,self).__call__(request, *args, **kwargs)
-            return ret if ret else response_cls()
-    return Wrapper
 
 
 
