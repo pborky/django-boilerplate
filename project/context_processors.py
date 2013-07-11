@@ -10,6 +10,9 @@ def site_data(request):
         }
 
 def login_form(request):
-    return {
-        'login_form': LoginForm()
-    }
+    if not (request.user and request.user.is_authenticated()):
+        return {
+            'login_form': LoginForm()
+        }
+    else:
+        return { }
