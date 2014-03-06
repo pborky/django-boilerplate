@@ -1,4 +1,3 @@
-
 MANAGE=python manage.py
 PROJECT_NAME=project
 FLAKE8_OPTS=--exclude=.git,migrations --max-complexity=10
@@ -37,7 +36,7 @@ clean:
 	find . -name '*.pyc' -exec rm '{}' ';'
 
 reqs/%: ensure_virtualenv
-	pip install -r requirements/$*.txt
+	pip install  --download-cache=~/.pip-cache -r requirements/$*.txt
 
 setup/test: ensure_virtualenv reqs/test
 
