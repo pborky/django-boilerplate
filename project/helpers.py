@@ -3,17 +3,19 @@ __author__ = 'pborky'
 import types
 from django.contrib import messages
 from django.views.decorators import http
-from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from django.conf.urls import url
 from django.db.models import get_models, get_app
 from django.contrib import admin
 from django.contrib.admin.sites import AlreadyRegistered
+from django.contrib.auth import get_user
+from django.contrib.auth.models import User
+from django.template import TemplateDoesNotExist
 
-from functional import partial
+from functools import partial
 
-
-_HTTP_METHODS = ('get','post', 'option', 'put', 'delete', 'head')
+import logging
+logger = logging.getLogger(__name__)
 
 def autoregister(*app_list):
     for app_name in app_list:
@@ -24,20 +26,6 @@ def autoregister(*app_list):
             except AlreadyRegistered:
                 pass
 
-
-
-class combine(dict):
-    def __init__(self, *dicts):
-        super(combine, self).__init__()
-        self.dicts = dicts
-    def get(self, item, default=None):
-        for d in self.dicts:
-            if item in d:
-                return d[item]
-        return default
-    def __len__(self):
-        return sum(len(d) for d in self.dicts)
-
 class Decorator(object):
     def __init__(self, func):
         self.func = func
@@ -45,7 +33,18 @@ class Decorator(object):
     def __call__(self, *args, **kwargs):
         return self.func.__call__(*args, **kwargs)
 
-def view(pattern, template = None, form_cls = None, redirect_to = None, redirect_attr = None, invalid_form_msg = 'Form is not valid.', decorators = (), **kwargs):
+def view(
+    pattern,
+    template = None,
+    form_cls = None,
+    redirect_to = None,
+    redirect_attr = None,
+    redirect_fallback=None,
+    invalid_form_msg = 'Form is not valid.',
+    decorators = (),
+    methods = ('get','post', 'option', 'put', 'delete', 'head'),
+    **kwargs
+):
     class Wrapper(Decorator):
         def __init__(self, obj):
             super(Wrapper, self).__init__(obj)
@@ -53,28 +52,27 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
             if isinstance(obj, types.ClassType):
                 obj = obj()
 
-            def get_function(obj, name):
-                if hasattr(obj, name):
-                    fnc = getattr(obj, name)
-                    if not isinstance(fnc, types.FunctionType): # we heave instance method
+            permitted_methods = {}
+
+            for method in methods:
+                if hasattr(obj, method):
+                    fnc = getattr(obj, method)
+                    if not isinstance(fnc, types.FunctionType):
                         fnc = partial(fnc, obj)
-                    return fnc
+                    permitted_methods[method.upper()] = fnc
 
-            if callable(obj):
-                permitted_methods = dict((method.upper(), obj) for method in _HTTP_METHODS )
-                require_http_methods_decorators = ()
-            else:
-                permitted_methods = dict(filter(None, ((method.upper(), get_function(obj,method)) for method in _HTTP_METHODS )))
-                require_http_methods_decorators = http.require_http_methods(request_method_list=permitted_methods.keys()),
+                else:
+                    # in case we have decorated function instead of class..
+                    if callable(obj):
+                        permitted_methods[method.upper()] = obj
 
-
+            require_http_methods_decorator = http.require_http_methods(request_method_list=permitted_methods.keys())
             for key, val in  permitted_methods.items():
                 setattr(self, key.lower(), val)
-            
+
             self.permitted_methods = permitted_methods.keys()
 
-            # decorate inner function
-            self.inner = reduce(lambda fnc, dec: dec(fnc), require_http_methods_decorators+decorators, self.inner )
+            self.inner = reduce(lambda fnc, dec: dec(fnc), (require_http_methods_decorator,)+decorators, self.inner )
 
         @staticmethod
         def _mk_forms(*args, **kwargs):
@@ -94,36 +92,42 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
             else:
                 it = forms
             return all(f.is_valid() if f is not None else True for f in it)
-
         def url(self):
             return url(pattern, self, kwargs, self.__name__)
 
         def __call__(self, *args, **kwargs):
             return self.inner(*args, **kwargs)
-            
 
         def inner(self, request, *args, **kwargs):
             from django.shortcuts import render, redirect
+
+            logger.debug('%s %s, User: %s, IP: %s' % (request.META.get('REQUEST_METHOD'),  request.get_full_path(), get_user(request), request.META.get('REMOTE_ADDR')))
+
             try:
 
-                if request.method not in self.permitted_methods:
+                fallback = False
+
+                if not request.method in self.permitted_methods:
                     return http.HttpResponseNotAllowed(permitted_methods=self.permitted_methods)
 
                 if request.method in ('POST',):
 
-                    forms = self._mk_forms(request.POST)
+                    forms = self._mk_forms(request.POST, request=request)  if request.POST else self._mk_forms(request=request)
                     ret =  self.post(request, *args, forms=forms, **kwargs)
 
                     if isinstance(ret, HttpResponse):
                         return ret
 
-                    if not self._is_valid(forms) and invalid_form_msg:
-                        messages.error(request, invalid_form_msg)
+                    if not self._is_valid(forms):
+                        if invalid_form_msg:
+                            messages.error(request, invalid_form_msg)
+                        if redirect_fallback:  # fallback if failed
+                            return redirect(redirect_fallback, **ret)
+
 
                 elif request.method in ('GET',) :
 
-                    forms =  self._mk_forms()
-                    # TODO setup forms from get paramters
+                    forms =  self._mk_forms(request.GET, request=request) if request.GET else self._mk_forms(request=request)
 
                     ret =  self.get(request, *args, forms=forms, **kwargs)
 
@@ -131,13 +135,13 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
                         return ret
 
                     if not self._is_valid(forms):
-                        #forms =  self._mk_forms()
+                        #forms =  self._mk_forms(request=request)
                         #messages.error(request, invalid_form_msg)
                         pass
 
                 elif request.method in ('HEAD', 'OPTION', 'PUT', 'DELETE') :
                     ret =  {}  # not implemented yet
-                    forms =  self._mk_forms()
+                    forms =  self._mk_forms(request=request)
 
                 else:
                     return
@@ -146,7 +150,7 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
                 raise e
                 #return HttpResponseServerError()
 
-            redirect_addr = combine(request.GET,request.POST).pop(redirect_attr, redirect_to)
+            redirect_addr = request.GET[redirect_attr] if redirect_attr in request.GET else redirect_to
 
             if redirect_addr:
                 context_vars = { }
@@ -166,16 +170,35 @@ def view(pattern, template = None, form_cls = None, redirect_to = None, redirect
                 if isinstance(ret,dict):
                     context_vars.update(ret)
 
-                return render(request, template, context_vars)
+                try:
+                    return render(request, template, context_vars)
+                except TemplateDoesNotExist:
+                    return HttpResponse()
     return Wrapper
 
-
-
-
 def view_GET(*args, **kwargs):
-    decorators = kwargs.pop('decorators', ())
-    return view(*args, decorators=(require_GET,)+decorators , **kwargs)
+    kwargs['methods'] = 'get',
+    return view(*args, **kwargs)
 
 def view_POST(*args, **kwargs):
-    decorators = kwargs.pop('decorators', ())
-    return view(*args, decorators=(require_POST,)+decorators , **kwargs)
+    kwargs['methods'] = 'post',
+    return view(*args, **kwargs)
+
+def redirect(attr='next_url', fallback='/'):
+    class Wrapper(Decorator):
+        def __call__(self, request, *args, **kwargs):
+            from django.shortcuts import redirect
+            ret = super(Wrapper,self).__call__(request, *args, **kwargs)
+            if attr in request.POST:
+                next = request.POST.get(attr)
+            else:
+                next = request.GET.get(attr,fallback)
+            return ret if ret else redirect(next)
+    return Wrapper
+
+def default_response(response_cls=HttpResponse):
+    class Wrapper(Decorator):
+        def __call__(self, request, *args, **kwargs):
+            ret = super(Wrapper,self).__call__(request, *args, **kwargs)
+            return ret if ret else response_cls()
+    return Wrapper

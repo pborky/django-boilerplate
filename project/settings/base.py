@@ -150,11 +150,13 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'south',
-    'bootstrap_toolkit',
+    'bootstrap3',
     'project',
 )
 
-BOOTSTRAP_BASE_URL  = STATIC_URL
+BOOTSTRAP3 = {
+    'base_url': STATIC_URL,
+    }
 
 LOGIN_URL = '/login'
 

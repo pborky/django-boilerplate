@@ -36,26 +36,19 @@ lint:  ensure_virtualenv
 clean:
 	find . -name '*.pyc' -exec rm '{}' ';'
 
+reqs/%: ensure_virtualenv
+	pip install -r requirements/$*.txt
 
-reqs/dev: ensure_virtualenv
-	pip install -r requirements/dev.txt
+setup/test: ensure_virtualenv reqs/test
 
-reqs/test: ensure_virtualenv
-	pip install -r requirements/test.txt
-
-reqs/prod: ensure_virtualenv
-	pip install -r requirements/prod.txt
-
-dev-setup: ensure_virtualenv reqs/dev
+setup/dev: ensure_virtualenv reqs/dev
 	if [ ! -f $(PROJECT_NAME)/settings/local.py ]; then \
 		echo 'from .dev import *' > $(PROJECT_NAME)/settings/local.py; \
 	fi
 	$(MANAGE) syncdb --all
 	$(MANAGE) migrate --fake
 
-test-setup: ensure_virtualenv reqs/test
-
-dev-update: ensure_virtualenv reqs/dev
+update/dev: ensure_virtualenv reqs/dev
 	$(MAKE) update
 
 update: ensure_virtualenv
@@ -63,3 +56,11 @@ update: ensure_virtualenv
 	$(MANAGE) syncdb
 	$(MANAGE) migrate
 	$(MANAGE) collectstatic --noinput
+
+migrate-init/%: ensure_virtualenv
+	$(MANAGE) schemamigration $* --initial
+	$(MANAGE) migrate $* --fake
+
+migrate-update/%: ensure_virtualenv
+	$(MANAGE) schemamigration $*  --auto
+	$(MANAGE) migrate $*

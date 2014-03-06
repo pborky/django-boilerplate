@@ -1,47 +1,142 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
 {% block body_class %}{{ block.super }} home{% endblock %}
 
-
-{% block sidebar %}
-    <ul class="nav nav-list">
-        <li class="nav-header">List header</li>
-        <li class="active"><a href="#">Home</a></li>
-        <li><a href="#">Library</a></li>
-        ...
-    </ul>
+{% block carousel %}
+    <div class='carousel slide' id='myCarousel'>
+        <ol class='carousel-indicators'>
+            <li class='active' data-slide-to='0' data-target='#myCarousel'></li>
+            <li data-slide-to='1' data-target='#myCarousel'></li>
+            <li data-slide-to='2' data-target='#myCarousel'></li>
+        </ol>
+        <div class='carousel-inner'>
+            <div class='item active'>
+                <img alt='First slide' src='{%  static 'img/first.png' %}' style='width:100%; height:200px' />
+            </div>
+            <div class='item'>
+                <img alt='Second slide' src='{%  static 'img/second.png' %}' style='width:100%; height:200px' />
+            </div>
+            <div class='item'>
+                <img alt='Third slide' src='{%  static 'img/third.png' %}' style='width:100%; height:200px' />
+            </div>
+        </div>
+        <a class='left carousel-control' data-slide='prev' href='#myCarousel'>
+            <span class='glyphicon glyphicon-chevron-left'></span>
+        </a>
+        <a class='right carousel-control' data-slide='next' href='#myCarousel'>
+            <span class='glyphicon glyphicon-chevron-right'></span>
+        </a>
+    </div>
 {% endblock %}
 
+{% block nav-home-class %}active{% endblock %}
+
 {% block content %}
-    <form class="form-search">
+    <div class="container">
+        <p>&nbsp;</p>
+        {% bootstrap_messages %}
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="col-xs-3">
+                    <div id="navbar-content" class="hidden-print affix-top" data-spy="affix" data-offset-bottom="150">
+                        <ul class="nav">
+                            <li class="nav-header">Content</li>
+                            <li><a href="#par1">Lorem ipsum</a></li>
+                            <li><a href="#par2">In condimentu</a></li>
+                            <li><a href="#par3">Donec rhoncus</a></li>
+                            <li><a href="#par4">In tincidunt</a></li>
+                            <li><a href="#par5">Morbi non</a></li>
+                            <li><a href="#par6">Nam ac facilisis</a></li>
+                            <li><a href="#par7">In hac habitasse</a></li>
+                            <li><a href="#par8">Integer commodo</a></li>
+                            <li><a href="#par9">Integer ullamcorper</a></li>
+                            <li><a href="#par10">Curabitur in risus</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-xs-9">
+                    <div class='jumbotron'>
+                        <h1>
+                            Loren ipsum
+                            <small>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing.
+                            </small>
+                        </h1>
+                    </div>
+
+                    <!--form class="form-search">
         <div class="input-append">
             <input type="text" class="search-query input-xxlarge">
-            <button type="submit" class="btn"><i class="icon-search"></i></button>
+            <button type="submit" class="btn">{% bootstrap_icon 'search' %}</button>
         </div>
-    </form>
+    </form-->
+                    <div>
 
-    <a href="#myModal" role="button" class="btn btn-primary" data-toggle="modal">Launch demo modal</a>
+                        <p id="par1">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In facilisis molestie tincidunt. In hac habitasse platea dictumst. Nam malesuada egestas turpis a condimentum. In ipsum lacus, ultricies at consequat ac, condimentum in nibh. In lacus elit, cursus ut tincidunt sed, elementum bibendum erat. Vestibulum imperdiet purus ac ligula imperdiet bibendum. Donec et neque enim. Nulla viverra ultrices sapien in pretium. Donec et dapibus dui, vel viverra lorem. Praesent nec enim nisl. Ut ut tristique nisi.
+                        </p>
+                        <p id="par2">
+                            In condimentum nibh eget ante placerat, sed malesuada nibh tempor. Nunc lacus mauris, rhoncus nec velit quis, semper mollis lorem. Aenean non ligula purus. Morbi nisl lorem, egestas at accumsan vitae, cursus a sapien. Mauris ornare pharetra erat. Praesent ac ipsum ullamcorper, laoreet magna ut, dapibus odio. Curabitur vitae egestas dui. Aenean non tortor nec turpis lacinia fringilla.
+                        </p>
+                        <p id="par3">
+                            Donec rhoncus erat eu magna molestie pharetra. Donec tincidunt placerat quam, ut venenatis neque suscipit ac. Suspendisse potenti. Donec gravida congue magna, non sollicitudin dui interdum id. Phasellus ut blandit nulla. Nulla molestie sit amet enim vel laoreet. Morbi at blandit massa, vel vehicula justo. Duis sodales eget libero non malesuada. Integer id dolor malesuada, tempor purus nec, eleifend sem.
+                        </p>
+                        <p id="par4">
+                            In tincidunt nunc turpis, sit amet porttitor erat pulvinar eu. Praesent quis odio sed odio rutrum luctus et sed quam. Pellentesque tincidunt, dui laoreet dignissim viverra, est dolor scelerisque eros, quis imperdiet leo turpis et dui. Aenean volutpat mi eget purus volutpat facilisis. Nam dignissim dui a euismod gravida. In ut nisi elementum urna dictum consectetur. Nullam condimentum mauris velit, nec pulvinar elit fringilla a.
+                        </p>
+                        <p id="par5">
+                            Morbi non turpis ac velit tristique tempus. Pellentesque vel lacus molestie, facilisis mi et, elementum elit. Vestibulum turpis neque, pellentesque quis arcu non, aliquam tempor quam. Nunc volutpat arcu ipsum, et dapibus sem ornare vitae. Etiam quam nibh, posuere a tempor eget, semper sed nibh. Donec suscipit id erat a porttitor. Duis vitae consectetur lectus. Maecenas elementum lectus quis neque porta auctor. Morbi nec purus et massa suscipit sollicitudin at quis mi. Curabitur vitae nibh libero.
+                        </p>
+                        <p id="par6">
+                            Nam ac facilisis nulla, in semper ante. Nulla lobortis sed diam sit amet pellentesque. Proin laoreet facilisis nunc, eget accumsan nisi ultrices nec. Ut consectetur rhoncus lacus at gravida. Donec porta aliquam laoreet. Nulla placerat nec turpis vel lacinia. Vivamus feugiat aliquam tincidunt.
+                        </p>
+                        <p id="par7">
+                            In hac habitasse platea dictumst. Nulla sit amet ante vel dolor hendrerit varius. Vestibulum nec purus accumsan, auctor tellus vel, elementum lectus. Sed iaculis, dui vel convallis sollicitudin, lectus eros pellentesque purus, ullamcorper eleifend velit risus at erat. Duis tellus arcu, consectetur sit amet magna non, dapibus placerat sapien. Nunc eget est felis. Nam a mi commodo, facilisis ante id, vestibulum nulla. Morbi et auctor eros.
+                        </p>
+                        <p id="par8">
+                            Integer commodo varius lectus. Morbi eu odio ut elit ornare volutpat. Maecenas condimentum nec felis et eleifend. Vivamus purus turpis, rhoncus nec lobortis aliquam, luctus ut metus. Mauris non turpis ultrices urna scelerisque mollis sed id risus. Etiam et suscipit quam, vel egestas turpis. Vestibulum gravida ante quis diam lacinia, sed feugiat risus molestie. Etiam ultrices, nisi lacinia iaculis lacinia, nunc lorem ornare ipsum, non dignissim velit ligula quis elit. Duis ipsum nunc, molestie vel augue sed, sollicitudin malesuada nibh. Aenean at tincidunt dolor.
+                        </p>
+                        <p id="par9">
+                            Integer ullamcorper purus sapien, quis vulputate lectus ullamcorper eu. Donec tellus justo, posuere et facilisis ut, viverra sagittis ante. Maecenas tempor, urna vestibulum egestas consectetur, diam tellus blandit elit, eget ullamcorper magna odio vitae ipsum. Nulla egestas metus quis condimentum faucibus. Aenean tristique magna at ornare luctus. Sed et risus quis justo vehicula molestie quis vel lorem. Sed tempus auctor blandit. Aliquam massa arcu, facilisis vel ornare sed, ultricies quis sapien.
+                        </p>
+                        <p id="par10">
+                            Curabitur in risus eget lacus rutrum fringilla sed nec ligula. Nullam mollis libero congue velit venenatis, sed tincidunt purus auctor. Nulla bibendum justo ut sem interdum mattis. Proin varius nisi vitae urna viverra ornare. Mauris facilisis, ipsum vel auctor pretium, lectus erat tincidunt lorem, sed hendrerit odio urna in dolor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc faucibus ac lorem id tristique. Vivamus vehicula consectetur ligula, et pretium leo ultrices lobortis. Sed facilisis venenatis blandit. Donec at egestas augue. Pellentesque convallis, tellus ut condimentum feugiat, orci augue adipiscing erat, sit amet bibendum justo ligula sit amet odio. Vestibulum vel lorem vel neque posuere dictum.
+                        </p>
 
-    <!-- Modal -->
-    <div id="myModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="myModalLabel">Modal header</h3>
+                        <a href="#myModal" role="button" class="btn btn-primary" data-toggle="modal">Launch demo modal</a>
+                    </div>
+                </div>
+            </div>
+            <p>&nbsp;</p>
         </div>
-        <div class="modal-body">
-            <p>One fine body…</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            <button class="btn btn-primary">Save changes</button>
-        </div>
+
     </div>
 
+    <!-- Modal -->
+    <div id="myModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">Modal header</h3>
+                </div>
+                <div class="modal-body">
+                    <p>One fine body…</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                    <button class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascript %}
-{% endblock  %}
-
-{% block footer %}
-    auto footer
+    <script>
+        //$('#myCarousel').carousel()
+    </script>
 {% endblock  %}

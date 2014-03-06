@@ -1,104 +1,125 @@
 <!DOCTYPE html>
 {% load i18n %}
-{% load bootstrap_toolkit %}
+{% load bootstrap3 %}
 {% load url from future %}
+{% load staticfiles %}
 
 <html lang="en">
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport' />
         <title>{% block title %}{% if site_resource.title %}{{ site_resource.title }}{% else %}Title{% endif %}{% endblock %}</title>
-        
+        <link href='favicon.png' rel='icon' type='image/png' />
         <meta name="description" content="{% block meta_description %}{% endblock %}" />
         <meta name="author" content="{% block meta_author %}{% endblock %}" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        {% bootstrap_stylesheet_tag %}
-        {% bootstrap_stylesheet_tag "responsive" %}
-        {% block css %}{% endblock %}
+        {% bootstrap_css %}
+        <link href='{% static 'css/bootswatch.min.css' %}' rel='stylesheet' type='text/css' />
+        {% block extrastyle %}{% endblock %}
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="{% static "js/html5shiv.js" %}"></script>
+            <script src="{% static "js/respond.min.js" %}"></script>
+        <![endif]-->
 
-        <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
-        {% bootstrap_javascript_tag %}
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        {% bootstrap_javascript %}
+        <script src="{% static 'js/bootswatch.js' %}"></script>
         {% block javascript_library %} {% endblock %}
     </head>
 
     <body class="{% block body_class %}{% endblock %}">
     {% block body %}
-
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class="brand" href="/">{% block brand %}{% if site_resource.brand %}{{ site_resource.brand|removetags:"p a span"|safe }}{% else %}Brand{% endif %}{% endblock %}</a>
-                    <ul class="nav">
-                        {% block menu %}
-                            <li class="active"><a href="#">Home</a></li>
-                            <li><a href="#">Link</a></li>
-                            <li><a href="#">Link</a></li>
-                        {% endblock %}
-                    </ul>
-                    {% if user.is_authenticated %}
-                        <ul class="nav pull-right">
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                    {% if user.first_name or user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
-                                    <b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    {% if user.is_staff %}
-                                        <li class=""><a href="{% url 'admin:index' %}">Admin</a></li>
-                                        <li class="divider"></li>
-                                    {% endif %}
-                                    <li><a href="{% url 'admin:password_change' %}">Change password</a></li>
-                                    <li><a href="{% url 'logout' %}?next={{ request.get_full_path }}">Logout</a></li>
-                                </ul>
-                            </li>
+        {% block navbar %}
+            <div class='navbar navbar-inverse navbar-fixed-top'>
+                <div class='container'>
+                    <div class='navbar-header'>
+                        <span class="navbar-brand">{{ site_resource.brand|removetags:"p a span"|safe }}</span>
+                        <button class='navbar-toggle' data-target='.navbar-inverse-collapse' data-toggle='collapse' type='button'>
+                            <span class='icon-bar'></span>
+                            <span class='icon-bar'></span>
+                            <span class='icon-bar'></span>
+                        </button>
+                    </div>
+                    <div class='navbar-collapse collapse navbar-inverse-collapse'>
+                        <ul class='nav navbar-nav navbar-left'>
+                            <li class='{% block nav-home-class %}{% endblock %}'><a href='/'>Home</a></li>
+                            <li class='dropdown'>
+                                <a class='dropdown-toggle {% block nav-about-class %}{% endblock %}' data-toggle='dropdown' href='#' id='about'>
+                                    About
+                                    <span class='caret'></span>
+                                    <ul aria-labelledby='themes' class='dropdown-menu'>
+                                        <li><a href='#'>Project background</a></li>
+                                        <li><a href='#'>Method</a></li>
+                                        <li><a href='#'>Partners</a></li>
+                                        <li><a href='#'>Publications</a></li>
+                                        <li><a href='#'>Contact</a></li>
+                                    </ul>
+                                </a>
+                            <li class="{% block nav-news-class %}{% endblock %}"><a href='#'>News</a></li>
+                            <li class="{% block nav-events-class %}{% endblock %}"><a href='#'>Events</a></li>
+                            <li class="{% block nav-links-class %}{% endblock %}"><a href='#'>Links</a></li>
                         </ul>
-                    {%  else %}
-                        <ul class="nav pull-right">
+                        <ul class='nav navbar-nav navbar-right'>
+                            {% block navbar_right %}{% endblock %}
+                            {# The drop down menu  #}
+                            {% if user.is_authenticated %}
                                 <li class="dropdown">
-                                    <a class="dropdown-toggle" href="#" data-toggle="dropdown">Sign In <strong class="caret"></strong></a>
-                                    <div class="dropdown-menu" style="padding: 20px; padding-bottom: 0;">
-                                        <form class="form-inline" action="{% url 'do_login' %}" method="POST">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="user-dropdown">
+                                        {% if user.first_name or user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
+                                        <strong class="caret"></strong>
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="user-dropdown">
+                                        {% if user.is_staff %}
+                                            <li class=""><a href="{% url 'admin:index' %}">Admin</a></li>
+                                            <li class="divider"></li>
+                                        {% endif %}
+                                        <li><a href="{% url 'admin:password_change' %}">Change password</a></li>
+                                        <li><a href="{% url 'logout' %}?nexturl={{ request.get_full_path }}">Logout</a></li>
+
+                                    </ul>
+                                </li>
+                            {%  else %}
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" href="#" data-toggle="dropdown" id="login-dropdown">
+                                        Sign In
+                                        <strong class="caret"></strong>
+                                    </a>
+                                    <div class="dropdown-menu" style="padding: 20px" aria-labelledby="login-dropdown">
+                                        <form class="form-inline" action="{% url 'login' %}" method="POST">
                                             {% csrf_token %}
-                                            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-                                            {{ login_form|as_bootstrap:'inline' }}
+                                            <input type="hidden" name="nexturl" value="{{ request.get_full_path }}" />
+                                            {% bootstrap_form login_form %}
                                             <button type="submit" class="btn btn-primary">Sign in</button>
                                             <button type="submit" class="btn" data-toggle="dropdown">Cancel</button>
                                         </form>
                                     </div>
                                 </li>
-                            </ul>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="container" style="margin-top: 60px">
-            <div class="container-fluid">
-                <div class="row-fluid">
-                    <div class="span2">
-                        {% block sidebar %}{% endblock %}
-                    </div>
-                    <div class="span9">
-                        {% bootstrap_messages %}
-                        {% block content %}{% endblock %}
+                            {% endif %}
+                        </ul>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endblock %}
+        {% block carousel %}{% endblock %}
 
-        <p> <hr/> </p>
+        {% block content %}{% endblock %}
 
-        <footer class="footer">
-
-            <div class="container">
-                <div class="container-fluid">
-                    <div class="row-fluid">
-                        <div class="span2">{% if site_resource.footer_left %}{{ site_resource.footer_left|removetags:"p span"|safe }}{% else %}Left footer{% endif %}</div>
-                        <div class="span7 text-center">{% block footer %}{% endblock %}</div>
-                        <div class="span2 text-right">{% if site_resource.footer_right %}{{ site_resource.footer_right|removetags:"p span"|safe }}{% else %}Right footer{% endif %}</div>
+        {% block footer %}
+            <div class='jumbotron' style='margin-bottom:0'>
+                <div class="container">
+                    <div class="container-fluid">
+                        <div class="row-fluid">
+                            <div class="span2">{{ site_resource.footer_left|removetags:"p span"|safe }}</div>
+                            <div class="span7 text-center"></div>
+                            <div class="span2 text-right">{{ site_resource.footer_right|removetags:"p span"|safe }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </footer>
+        {% endblock %}
 
         {% block javascript %}{% endblock %}
 

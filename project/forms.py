@@ -1,7 +1,7 @@
 __author__ = 'pborky'
 
 from django import forms
-from bootstrap_toolkit.widgets import BootstrapTextInput, BootstrapPasswordInput
+from django.forms.widgets import  Input, PasswordInput
 
 class LoginForm(forms.Form):
 
@@ -9,11 +9,11 @@ class LoginForm(forms.Form):
         label='',
         max_length=100,
         required=True,
-        widget=BootstrapTextInput(attrs={'placeholder': 'Username'}),
+        widget=Input(attrs={'placeholder': 'Username'}),
     )
     password = forms.CharField (
         label='',
         max_length=100,
         required=True,
-        widget=BootstrapPasswordInput(attrs={'placeholder': 'Password'}),
+        widget=PasswordInput(attrs={'placeholder': 'Password'}),
     )
